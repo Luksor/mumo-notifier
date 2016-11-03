@@ -16,6 +16,7 @@ class notifier(MumoModule):
                     }
 
     def parseNotification(self, notification):
+        feedInfo = notification["feedName"].split('-')
         parsed = "<center>"
         if notification["link"] is not None:
             parsed += "<a href=\"" + notification["link"] + "\">"
@@ -23,11 +24,29 @@ class notifier(MumoModule):
             parsed += "<img src=\"" + notification["imageURL"] + "\"></img><br>"
         if notification["color"] is not None:
             parsed += "<font color=\"" + notification["color"] + "\">"
-        parsed += notification["title"]
-        if notification["color"] is not None:
-            parsed += "</font>"
+        parsed += "<b><font size=\"4\">" + notification["title"] + "</font></b><br>"
         if notification["link"] is not None:
             parsed += "</a>"
+        parsed += "<font size=\"3\">"
+        if notification["extra"] is not None:
+            if feedInfo[1] == "4chan":
+                parsed += ">>>/" + notification["extra"]["board"] + "/" + notification["extra"]["id"]
+                parsed += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                parsed += str(notification["extra"]["replies"]) + "/"
+                parsed += str(notification["extra"]["images"]) + "/"
+                parsed += str(notification["extra"]["page"]) + "<br>"
+            elif feedInfo[1] == "youtube":
+                parsed += notification["extra"]["displayName"] + "<br>"
+            elif feedInfo[1] == "vinesauce":
+                parsed += notification["extra"]["displayName"] + "<br>"
+            else:
+                parsed += str(notification["extra"]) + "<br>"
+        parsed += "</font><font size=\"2\">" + feedInfo[0] + " &#8594; " + feedInfo[1]
+        if len(feedInfo) > 2:
+            parsed += " &#8594; " + feedInfo[2]
+        parsed += "</font>"
+        if notification["color"] is not None:
+            parsed += "</font>"
         parsed += "</center>"
         return parsed
 
