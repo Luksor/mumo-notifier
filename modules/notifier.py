@@ -95,28 +95,57 @@ class notifier(MumoModule):
             log.debug("Restarting connection in 30 seconds!")
             time.sleep(30)
 
-    class SimpleRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-        HTTP_200 = 'HTTP/1.0 200 OK\r\n\r\n'
-        HTTP_404 = 'HTTP/1.0 404 Not Found\r\n\r\n'
+    def getRequestHandler(self, scfg, log):
+        class SimpleRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+            HTTP_200 = 'HTTP/1.0 200 OK\r\n\r\n'
+            HTTP_404 = 'HTTP/1.0 404 Not Found\r\n\r\n'
 
-        def do_GET(self):
-            url = re.split(ur"[\u003f\s]+", self.path)
-            if url[0] == "/":
-                self.wfile.write(self.HTTP_200 + self.getFileContent("index.html"))
-            elif url[0] == "/style.css":
-                self.wfile.write(self.HTTP_200 + self.getFileContent("style.css"))
-            elif url[0] == "/bootstrap.min.css":
-                self.wfile.write(self.HTTP_200 + self.getFileContent("bootstrap.min.css"))
-            else:
-                self.wfile.write(self.HTTP_404 + "404 Not Found")
+            def do_GET(self):
+                url = re.split(ur"[\u003f\s]+", self.path)
+                if url[0] == "/":
+                    self.wfile.write(self.HTTP_200 + self.getFileContent("index.html"))
+                elif url[0] == "/style.css":
+                    self.wfile.write(self.HTTP_200 + self.getFileContent("style.css"))
+                elif url[0] == "/script.js":
+                    self.wfile.write(self.HTTP_200 + self.getFileContent("script.js"))
+                elif url[0] == "/bootstrap.min.css":
+                    self.wfile.write(self.HTTP_200 + self.getFileContent("bootstrap.min.css"))
+                elif url[0] == "/jquery-3.1.1.min.js":
+                    self.wfile.write(self.HTTP_200 + self.getFileContent("jquery-3.1.1.min.js"))
+                elif url[0] == "/feeds.json":
+                    received_json = ""
+                    try:
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        sock.connect((scfg.notifier_server_ip, scfg.notifier_server_port))
+                        sock.sendall("{\"command\": \"list\"}\n")
+                        received_json = sock.makefile().readline()
+                        log.debug("Received feed list.")
+                        sock.close()
+                    except socket.error:
+                        log.debug("Connection error!")
+                    self.wfile.write(self.HTTP_200 + received_json)
+                else:
+                    self.wfile.write(self.HTTP_404 + "404 Not Found")
 
-        def getFileContent(self, fileName):
-            with open("notifier-data/" + fileName, 'r') as content_file:
-                content = content_file.read()
-            return content
+            def getFileContent(self, fileName):
+                with open("notifier-data/" + fileName, 'r') as content_file:
+                    content = content_file.read()
+                return content
+        return SimpleRequestHandler
 
-    def runWebServer(self, server_class=BaseHTTPServer.HTTPServer,
-        handler_class=SimpleRequestHandler):
+    def runWebServer(self):
+        if not hasattr(self, 'server'):
+            self.server=self.manager().getMeta().getBootedServers()[0]
+
+        log = self.log()
+
+        try:
+            scfg = getattr(self.cfg(), 'server_%d' % self.server.id())
+        except AttributeError:
+            scfg = self.cfg().all
+
+        server_class = BaseHTTPServer.HTTPServer
+        handler_class = self.getRequestHandler(scfg, log)
         server_address = ('', 8833)
         httpd = server_class(server_address, handler_class)
         httpd.serve_forever()
