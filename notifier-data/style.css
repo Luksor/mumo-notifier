@@ -1,6 +1,100 @@
-.main-window {
+html{
+    background-color: #eef;
     text-align: center;
-    margin: auto;
-    margin-top: 20px;
-    width: 450px;
+    color: #333;
+}
+
+#main {
+    display: inline-block;
+    font-family: sans-serif;
+    position: relative;
+    text-align: left;
+    margin-bottom: 32px;
+    border: 1px solid #ddd;
+    box-shadow: 0px 4px 8px -3px #aaa;
+    border-radius: 2px;
+    width: 600px;
+    background-color: white;
+}
+
+#main .title {
+    text-align: center;
+    font-size: 20px;
+    padding: 20px;
+    font-weight: bold;
+}
+
+.feeds {
+    border-bottom: 1px solid lightgray;
+    transition-property: height;
+    transition-duration: 0.3s;
+    overflow: hidden;
+}
+
+.feeds .header {
+    height: 64px;
+    padding: 23px 0;
+    color: gray;
+    box-sizing: border-box;
+}
+
+.feeds .feed {
+    height: 48px;
+    border-top: 1px solid lightgray;
+    line-height: 18px;
+    padding: 15px 0;
+    box-sizing: border-box;
+}
+
+.feeds .feedSubscribe {
+    display: inline-block;
+    margin: 0 24px;
+    padding: 0;
+    border: 2px solid lightgray;
+    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
+    float: left;
+}
+
+.feeds .feed .feedSubscribe {
+    margin: 0 24px 0 24px;
+}
+
+.feeds .feedName {
+    display: inline-block;
+    float: left;
+}
+
+.feeds .feedLabel {
+    display: inline-block;
+    margin: 0 24px 0 0;
+    float: right;
+    border-radius: 3px;
+    padding: 0 3px;
+    height: 18px;
+    color: white;
+    font-size: 13px;
+}
+
+.feeds .dropdown {
+    display: inline-block;
+    margin: 0 24px 0 0;
+    float: right;
+    color: lightgray;
+    cursor: pointer;
+    transition-property: transform;
+    transition-duration: 0.3s;
+}
+
+#main .save-btn {
+    background-color: transparent;
+    color: #4285F4;
+    text-transform: uppercase;
+    border: none;
+    font-size: 25px;
+    padding: 15px;
+    float: right;
+    cursor: pointer;
+    margin: 10px 20px 10px;
 }

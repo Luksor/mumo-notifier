@@ -108,8 +108,6 @@ class notifier(MumoModule):
                     self.wfile.write(self.HTTP_200 + self.getFileContent("style.css"))
                 elif url[0] == "/script.js":
                     self.wfile.write(self.HTTP_200 + self.getFileContent("script.js"))
-                elif url[0] == "/bootstrap.min.css":
-                    self.wfile.write(self.HTTP_200 + self.getFileContent("bootstrap.min.css"))
                 elif url[0] == "/jquery-3.1.1.min.js":
                     self.wfile.write(self.HTTP_200 + self.getFileContent("jquery-3.1.1.min.js"))
                 elif url[0] == "/feeds.json":

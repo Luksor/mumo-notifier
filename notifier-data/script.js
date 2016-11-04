@@ -1,13 +1,51 @@
+function save(){
+    $.post("/submit", function(data) {
+        alert("Saved!");
+    });
+}
+
+var collapsed = []
+
+function toogleFeeds(ev) {
+    let feeds = $(ev).parent().parent()
+    let feedsid = feeds.attr('id')
+    if(!collapsed[feedsid]) {
+        collapsed[feedsid] = feeds.height()
+        feeds.css("height", 64)
+        $(ev).css("transform", "rotate(180deg)")
+    }else {
+        feeds.css("height", collapsed[feedsid])
+        delete collapsed[feedsid]
+        $(ev).css("transform", "rotate(0deg)")
+    }
+}
+
 $(document).ready(function(){
     $.getJSON('feeds.json', function(data) {
-        for (var feed in data["feeds"]) {
-            feedInfo = feed.split("-");
-            if($("#" + feedInfo[0]).length == 0) {
-                $(".panel-body").append('<div class="list-group" id="' + feedInfo[0] + '"><a class="list-group-item disabled">' + feedInfo[0] + '</a></div>');
+        for (var feedId in data["feeds"]) {
+            var feedInfo = feedId.split("-");
+            var feed = data["feeds"][feedId]
+            if($(`#feeds-${feedInfo[0]}`).length == 0) {
+                $("#main").append(`
+                    <div id="feeds-${feedInfo[0]}" class="feeds">
+                        <div class="header">
+                            <input class="feedSubscribe" type="checkbox">
+                            <div class="feedName">${feedInfo[0]}</div>
+                            <div class="dropdown" onclick="toogleFeeds(this)">▲</div>
+                        </div>
+                    </div>`)
             }
-            $("#" + feedInfo[0]).append('<a class="list-group-item" id="' + feed + '" style="text-align: left;"><input type="checkbox" style="float: left;">&nbsp;' + feed + '&nbsp;</a>');
-            $("[id='" + feed + "']").append('<span class="label label-info" style="float: right; background-color: ' + data["feeds"][feed]["color"] + ';">' + feedInfo[1] + '</span>');
+            $(`#feeds-${feedInfo[0]}`).append(`
+                <div id="feed-${feedId}" class="feed">
+                    <input class="feedSubscribe" type="checkbox">
+                    <div class="feedName">${feedId}</div>
+                    <div class="feedLabel" style="background-color: ${feed["color"]}">${feedInfo[1]}</div>
+                </div>`)
         }
-        $(".panel-body").append('<button type="button" onclick="alert(\'Saved!\')" class="btn btn-success">Save</button>');
+        for (var feeds of $(".feeds")) {
+            var feeds = $(feeds)
+            feeds.css("height", feeds.height())
+        }
+        $("#main").append(`<button type="button" onclick="save()" class="save-btn">Save</button>`);
     });
 });
