@@ -30,7 +30,7 @@ class notifier(MumoModule):
         parsed += "<font size=\"3\">"
         if notification["extra"] is not None:
             if feedInfo[1] == "4chan":
-                parsed += ">>>/" + notification["extra"]["board"] + "/" + notification["extra"]["id"]
+                parsed += ">>>/" + notification["extra"]["board"] + "/" + str(notification["extra"]["id"])
                 parsed += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
                 parsed += str(notification["extra"]["replies"]) + "/"
                 parsed += str(notification["extra"]["images"]) + "/"
