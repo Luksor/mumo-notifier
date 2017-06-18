@@ -116,7 +116,14 @@ class notifier(MumoModule):
                     self.wfile.write(self.HTTP_200 + self.getFileContent("script.js"))
                 elif url[0] == "/jquery-3.1.1.min.js":
                     self.wfile.write(self.HTTP_200 + self.getFileContent("jquery-3.1.1.min.js"))
-                elif url[0] == "/feeds.json":
+                elif url[0] == "/user":
+                    db = sqlite3.connect('notifier-data/sqlite.db')
+                    dbc = db.cursor()
+                    dbc.execute("SELECT * FROM users WHERE token=?", (self.headers['Token'],))
+                    user = dbc.fetchone();
+                    db.close()
+                    self.wfile.write(self.HTTP_200 + "{\"name\": \"" + user[0] + "\"}")
+                elif url[0] == "/feeds":
                     received_json = ""
                     try:
                         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -157,7 +164,7 @@ class notifier(MumoModule):
     def __init__(self, name, manager, configuration = None):
         MumoModule.__init__(self, name, manager, configuration)
         self.murmur = manager.getMurmurModule()
-
+        
     def connected(self):
         manager = self.manager()
         log = self.log()
@@ -168,8 +175,6 @@ class notifier(MumoModule):
             servers = manager.SERVERS_ALL
 
         manager.subscribeServerCallbacks(self, servers)
-
-        db = sqlite3.connect('notifier-data/sqlite.db')
         
         t = threading.Thread(target=self.connection_thread)
         t.daemon = True
@@ -189,7 +194,12 @@ class notifier(MumoModule):
         if (command == "!notifier"):
             name = user.name
             token = str(uuid.uuid4())
-            server.sendMessage(user.session, "<a href=\"" + scfg.webpanel_public_address + ":8833/?user=" + name + "&token=" + token + "\">Configure notifications.</a>")
+            db = sqlite3.connect('notifier-data/sqlite.db')
+            dbc = db.cursor()
+            dbc.execute("INSERT OR REPLACE INTO users VALUES (\'" + name + "\',\'" + token + "\')")
+            db.commit()
+            db.close()
+            server.sendMessage(user.session, "<a href=\"" + scfg.webpanel_public_address + ":8833/?token=" + token + "\">Configure notifications.</a>")
 
     def disconnected(self): pass
     def userConnected(self, server, state, context = None): pass

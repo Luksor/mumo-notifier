@@ -24,6 +24,12 @@ html{
     font-weight: bold;
 }
 
+#user {
+    float: right;
+    color: #555;
+    margin: 10px;
+}
+
 .feeds {
     border-bottom: 1px solid lightgray;
     transition-property: height;
