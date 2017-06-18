@@ -2,7 +2,7 @@
 # -*- coding: utf-8
 
 from mumo_module import (commaSeperatedIntegers, MumoModule)
-import re, socket, json, sched, time, threading, BaseHTTPServer, uuid
+import re, socket, json, sched, time, threading, BaseHTTPServer, uuid, sqlite3
 
 class notifier(MumoModule):
     default_config = {'notifier':(
@@ -76,11 +76,17 @@ class notifier(MumoModule):
                         result = ""
                         entries = 0
                         for notification in received["notifications"]:
-                            result += self.parseNotification(notification)
-                            entries += 1
+                            if notification["error"] is False:
+                                result += self.parseNotification(notification)
+                                entries += 1
+                            else:
+                                log.debug("Error in notification:\n" + notification["title"] + "\n" + notification["description"])
                         for status in received["status"]:
-                            result += self.parseNotification(status)
-                            entries += 1
+                            if status["error"] is False:
+                                result += self.parseNotification(status)
+                                entries += 1
+                            else:
+                                log.debug("Error in status:\n" + status["title"] + "\n" + status["description"])
                         if entries > 0:
                             self.server.sendMessageChannel(0, True, result)
                     except ValueError:
@@ -163,6 +169,8 @@ class notifier(MumoModule):
 
         manager.subscribeServerCallbacks(self, servers)
 
+        db = sqlite3.connect('notifier-data/sqlite.db')
+        
         t = threading.Thread(target=self.connection_thread)
         t.daemon = True
         t.start()
@@ -179,7 +187,9 @@ class notifier(MumoModule):
         words = re.split(ur"[\u200b\s]+", message.text)
         command = words[0]
         if (command == "!notifier"):
-            server.sendMessageChannel(user.channel, False, "<a href=\"" + scfg.webpanel_public_address + ":8833/?token=" + str(uuid.uuid4()) + "\">Configure notifications.</a>")
+            name = user.name
+            token = str(uuid.uuid4())
+            server.sendMessage(user.session, "<a href=\"" + scfg.webpanel_public_address + ":8833/?user=" + name + "&token=" + token + "\">Configure notifications.</a>")
 
     def disconnected(self): pass
     def userConnected(self, server, state, context = None): pass
